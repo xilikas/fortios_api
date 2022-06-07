@@ -12,6 +12,14 @@ from dotenv import load_dotenv
 load_dotenv()
 key = os.getenv('API_KEY')
 
+def print_attr(id, name, srcintf, dstintf, srcaddr, dstaddr, service, action):
+    print(f'Policy ID: {id}')
+    print(f'Name: {name}')
+    print(f'Interface: {srcintf} -> {dstintf}')
+    print(f'Address: {srcaddr} -> {dstaddr}')
+    print(f'Service: {service}')
+    print(f'Action: {action}')
+
 def view_policies(arg_id = 0):
     """
     Views all or one firewall policy
@@ -38,12 +46,7 @@ def view_policies(arg_id = 0):
             service = policies[counter]['service'][0]['name']
             action = policies[counter]['action']
 
-            print(f'Policy ID: {id}')
-            print(f'Name: {name}')
-            print(f'Interface: {srcintf} -> {dstintf}')
-            print(f'Address: {srcaddr} -> {dstaddr}')
-            print(f'Service: {service}')
-            print(f'Action: {action}')
+            print_attr(id, name, srcintf, dstintf, srcaddr, dstaddr, service, action)
 
             counter += 1
     else:
@@ -60,12 +63,7 @@ def view_policies(arg_id = 0):
             service = policy[0]['service'][0]['name']
             action = policy[0]['action']
 
-            print(f'Policy ID: {id}')
-            print(f'Name: {name}')
-            print(f'Interface: {srcintf} -> {dstintf}')
-            print(f'Address: {srcaddr} -> {dstaddr}')
-            print(f'Service: {service}')
-            print(f'Action: {action}')
+            print_attr(id, name, srcintf, dstintf, srcaddr, dstaddr, service, action)
             
         else:
             print('Policy ID does not exist.')
