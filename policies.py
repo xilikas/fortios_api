@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 key = os.getenv('API_KEY')
 
+uri: str = f'https://firewall.xilikas:4443/api/v2/cmdb/firewall/policy'
+
 def print_attr(id, name, srcintf, dstintf, srcaddr, dstaddr, service, action):
     print(f'Policy ID: {id}')
     print(f'Name: {name}')
@@ -32,7 +34,7 @@ def view_policies(arg_id = 0):
     """
 
     if arg_id == 0:
-        url = f'http://firewall.xilikas/api/v2/cmdb/firewall/policy?access_token={key}'
+        url = f'{uri}?access_token={key}'
         response = requests.get(url, verify=False)
         policies = response.json()['results']
         counter = 0
@@ -50,7 +52,7 @@ def view_policies(arg_id = 0):
 
             counter += 1
     else:
-        url = f'http://firewall.xilikas/api/v2/cmdb/firewall/policy/{arg_id}?access_token={key}'
+        url = f'{uri}/{arg_id}?access_token={key}'
         response = requests.get(url, verify=False)
         if response.json()['http_status'] == 200:
             policy = response.json()['results']
@@ -68,9 +70,77 @@ def view_policies(arg_id = 0):
         else:
             print('Policy ID does not exist.')
 
+def edit_policy(arg_name: str , arg_srcintf: str, arg_dstintf: str, arg_srcaddr: str, arg_dstaddr: str, arg_service: str, arg_action: str, arg_id: int = 0):
+    """
+    Creates or edits a firewall policy if the policy ID is provided
+
+    Parameters:
+    arg_name: str : Name of the policy
+    arg_srcintf: str : Source interface
+    arg_dstintf: str : Destination interface 
+    arg_srcaddr: str : Source address
+    arg_dstaddr: str : Destination address
+    arg_service: str : Services (ports)
+    arg_action: str : Accept or Deny
+    arg_id: int = 0 : Policy ID, blank if creating a new policy
+
+    Returns: 
+    Policy ID and attributes
+    """
+
+    # if policy ID = 0, create a dictionary with the new information and pass it through. 
+    url = f'{uri}/?access_token={key}'
+    data = {
+        "name": arg_name,
+        "srcintf": [
+            {
+                "name": arg_srcintf
+            }
+        ], 
+        "dstintf": [
+            {
+                "name": arg_dstintf
+            }
+        ], 
+        "srcaddr": [
+            {
+                "name": arg_srcaddr
+            }
+        ], 
+        "dstaddr": [
+            {
+                "name": arg_dstaddr
+            }
+        ], 
+        "srcintf": [
+            {
+                "name": arg_srcintf
+            }
+        ], 
+        "service": [
+        {
+            "name": "ALL"
+        }
+        ],
+        "action": arg_action,
+        "schedule": "always"
+    }
+
+    response = requests.post(url, json=data, verify=False)
+
+    if response.json()['http_status'] == 200:
+        print("Success")
+        print_attr(response.json()['mkey'], arg_name, arg_srcintf, arg_dstintf, arg_srcaddr, arg_dstaddr, arg_service, arg_action)
+    else:
+        print("Operation failed")
+        print(response.json()['cli_error'])
+
+
 print ('All policies:')
 view_policies()
 print ('Only one policy (e.g. 3):')
 view_policies(3)
 print ('Error message for when policy ID does not exist:')
 view_policies(5)
+print ('New policy:')
+edit_policy("testpolicy", "Trust", "Untrust", "all", "all", "ALL", "accept")
