@@ -88,8 +88,7 @@ def edit_policy(arg_name: str , arg_srcintf: str, arg_dstintf: str, arg_srcaddr:
     Policy ID and attributes
     """
 
-    # if policy ID = 0, create a dictionary with the new information and pass it through. 
-    url = f'{uri}/?access_token={key}'
+    # Payload to pass to API  
     data = {
         "name": arg_name,
         "srcintf": [
@@ -126,8 +125,15 @@ def edit_policy(arg_name: str , arg_srcintf: str, arg_dstintf: str, arg_srcaddr:
         "schedule": "always"
     }
 
-    response = requests.post(url, json=data, verify=False)
+    # if policy ID = 0, pass data without a policy specified in the URL 
 
+    if arg_id == 0:
+        url = f'{uri}/?access_token={key}'
+        response = requests.post(url, json=data, verify=False)
+    else:
+        url = f'{uri}/{arg_id}?access_token={key}'
+        response = requests.put(url, json=data, verify=False)
+    
     if response.json()['http_status'] == 200:
         print("Success")
         print_attr(response.json()['mkey'], arg_name, arg_srcintf, arg_dstintf, arg_srcaddr, arg_dstaddr, arg_service, arg_action)
@@ -141,6 +147,8 @@ view_policies()
 print ('Only one policy (e.g. 3):')
 view_policies(3)
 print ('Error message for when policy ID does not exist:')
-view_policies(5)
+view_policies(99)
 print ('New policy:')
-edit_policy("testpolicy", "Trust", "Untrust", "all", "all", "ALL", "accept")
+edit_policy("testpolicy123", "Trust", "Untrust", "all", "all", "ALL", "accept")
+print ('Edit policy:')
+edit_policy("testpolicy", "Trust", "Untrust", "all", "all", "ALL", "deny", 5)
