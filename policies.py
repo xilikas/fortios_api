@@ -29,7 +29,7 @@ def view_policies(arg_id: int = 0):
     Views all or one firewall policy
 
     Parameters:
-    
+
     arg_id: int = 0 : Policy ID, blank if viewing all policies
 
     Returns: 
@@ -123,29 +123,27 @@ def edit_policy(arg_name: str , arg_srcintf: str, arg_dstintf: str, arg_srcaddr:
             {
                 "name": arg_dstaddr
             }
-        ], 
-        "srcintf": [
-            {
-                "name": arg_srcintf
-            }
-        ], 
+        ],
         "service": [
         {
             "name": "ALL"
         }
         ],
         "action": arg_action,
-        "schedule": "always"
+        "schedule": "always",
+        "policyid": arg_id
     }
 
-    if arg_id == 0:
-        # if policy ID = 0, pass data without a policy specified in the URL and send a post request
+    url = f'{uri}/{arg_id}?access_token={key}'
+    response = requests.get(url, verify=False).json()
+
+    if response['http_status'] == 200:
+        # if policy exists, edit it
+        response = requests.put(url, json=data, verify=False).json()
+    else: 
+        # policy does not exist, have to change method and URL 
         url = f'{uri}/?access_token={key}'
         response = requests.post(url, json=data, verify=False).json()
-    else:
-        # if not, then pass the data to the specified policy and send a put request
-        url = f'{uri}/{arg_id}?access_token={key}'
-        response = requests.put(url, json=data, verify=False).json()
     
     if response['http_status'] == 200:
         print("Success")
@@ -176,17 +174,21 @@ def delete_policy(arg_id: int):
         print(f"Operation failed; Policy ID {response['mkey']} does not exist")
 
 # Tests
-print ('All policies:')
+print('All policies:')
 view_policies()
-print ('Only one policy (e.g. 3):')
+print('Only one policy (e.g. 3):')
 view_policies(3)
-print ('Error message for when policy ID does not exist:')
+print('Error message for when policy ID does not exist:')
 view_policies(99)
-print ('New policy:')
+print('New policy:')
 edit_policy("testpolicy123", "Trust", "Untrust", "all", "all", "ALL", "accept")
-print ('Edit policy:')
+print('Edit policy:')
 edit_policy("testpolicy", "Trust", "Untrust", "all", "all", "ALL", "deny", 4)
-print ('Deleting policy 4:')
+print('Deleting policy 4:')
 delete_policy(4)
-print ('Deleting a policy that does not exist:')
+print('Deleting a policy that does not exist:')
 delete_policy(99)
+print('Creating a policy whose ID is specified:')
+edit_policy("testpolicy100", "Trust", "Untrust", "all", "all", "ALL", "accept", 100)
+print('Deleting policy 100:')
+delete_policy(100)

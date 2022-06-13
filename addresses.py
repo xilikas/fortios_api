@@ -82,9 +82,9 @@ def edit_address(arg_name: str, arg_subnet: str, arg_interface: str = ""):
         print(response['cli_error'])
 
 # Tests
-print("View address object for \"Class A\":")
-view_address("Class A")
-print("Create an address object:")
-edit_address("testaddressagain", "10.0.0.0 255.0.0.0", "Trust")
-print("Edit \"testaddressagain\":")
-edit_address("testaddressagain", "10.10.0.0 255.0.0.0", "")
+print('View address object for "Class A":')
+view_address('Class A')
+print('Create an address object:')
+edit_address('testaddressagain', '10.0.0.0 255.0.0.0', 'Trust')
+print('Edit "testaddressagain":')
+edit_address('testaddressagain', '10.10.0.0 255.0.0.0', '')
