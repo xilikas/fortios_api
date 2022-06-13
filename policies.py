@@ -1,5 +1,7 @@
 """
 View and edit firewall policies, as well as including an interface to use firewall iprope lookup
+
+To do: add functionality for policy lookup and use it to check for existing policies when creating a new one. 
 """
 
 import requests 
@@ -14,7 +16,7 @@ key = os.getenv('API_KEY')
 
 uri: str = f'https://firewall.xilikas:4443/api/v2/cmdb/firewall/policy'
 
-def print_attr(id, name, srcintf, dstintf, srcaddr, dstaddr, service, action):
+def print_attr(id: int, name: str, srcintf: str, dstintf: str, srcaddr: str, dstaddr: str, service: str, action: str):
     print(f'Policy ID: {id}')
     print(f'Name: {name}')
     print(f'Interface: {srcintf} -> {dstintf}')
@@ -27,9 +29,11 @@ def view_policies(arg_id: int = 0):
     Views all or one firewall policy
 
     Parameters:
+    
     arg_id: int = 0 : Policy ID, blank if viewing all policies
 
     Returns: 
+
     prints commonly viewed attributes of a policy
     """
 
@@ -75,16 +79,25 @@ def edit_policy(arg_name: str , arg_srcintf: str, arg_dstintf: str, arg_srcaddr:
     Creates or edits a firewall policy if the policy ID is provided
 
     Parameters:
+
     arg_name: str : Name of the policy
+
     arg_srcintf: str : Source interface
+
     arg_dstintf: str : Destination interface 
+
     arg_srcaddr: str : Source address
+
     arg_dstaddr: str : Destination address
+
     arg_service: str : Services (ports)
+
     arg_action: str : Accept or Deny
+
     arg_id: int = 0 : Policy ID, blank if creating a new policy
 
     Returns: 
+
     Policy ID and attributes
     """
 
@@ -128,38 +141,41 @@ def edit_policy(arg_name: str , arg_srcintf: str, arg_dstintf: str, arg_srcaddr:
     if arg_id == 0:
         # if policy ID = 0, pass data without a policy specified in the URL and send a post request
         url = f'{uri}/?access_token={key}'
-        response = requests.post(url, json=data, verify=False)
+        response = requests.post(url, json=data, verify=False).json()
     else:
         # if not, then pass the data to the specified policy and send a put request
         url = f'{uri}/{arg_id}?access_token={key}'
-        response = requests.put(url, json=data, verify=False)
+        response = requests.put(url, json=data, verify=False).json()
     
-    if response.json()['http_status'] == 200:
+    if response['http_status'] == 200:
         print("Success")
-        print_attr(response.json()['mkey'], arg_name, arg_srcintf, arg_dstintf, arg_srcaddr, arg_dstaddr, arg_service, arg_action)
+        print_attr(response['mkey'], arg_name, arg_srcintf, arg_dstintf, arg_srcaddr, arg_dstaddr, arg_service, arg_action)
     else:
         print("Operation failed")
-        print(response.json()['cli_error'])
+        print(response['cli_error'])
 
 def delete_policy(arg_id: int):
     """
     Deletes the policy with the specified ID
 
     Parameters:
+
     arg_id: int: Policy ID
 
     Returns: 
+
     Deleted policy ID
     """
 
     url = f'{uri}/{arg_id}?access_token={key}'
-    response = requests.delete(url, verify=False)
+    response = requests.delete(url, verify=False).json()
 
-    if response.json()['http_status'] == 200:
-        print(f"Success; Policy ID {response.json()['mkey']} has been deleted")
+    if response['http_status'] == 200:
+        print(f"Success; Policy ID {response['mkey']} has been deleted")
     else:
-        print(f"Operation failed; Policy ID {response.json()['mkey']} does not exist")
+        print(f"Operation failed; Policy ID {response['mkey']} does not exist")
 
+# Tests
 print ('All policies:')
 view_policies()
 print ('Only one policy (e.g. 3):')
